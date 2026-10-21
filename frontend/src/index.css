@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+/* Tailwind v4 手动 dark 变体：由 <html class="dark"> 控制 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* 流式输出的闪烁光标 */
+.stream-cursor::after {
+  content: "▍";
+  animation: blink 1s step-start infinite;
+  color: #6b7280;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Markdown 内容基础排版 */
+.md-body {
+  line-height: 1.7;
+  word-break: break-word;
+}
+.md-body > *:first-child {
+  margin-top: 0;
+}
+.md-body > *:last-child {
+  margin-bottom: 0;
+}
+.md-body p {
+  margin: 0.5em 0;
+}
+.md-body ul,
+.md-body ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+.md-body ul {
+  list-style: disc;
+}
+.md-body ol {
+  list-style: decimal;
+}
+.md-body h1,
+.md-body h2,
+.md-body h3 {
+  font-weight: 700;
+  margin: 0.8em 0 0.4em;
+}
+.md-body blockquote {
+  border-left: 3px solid #9ca3af;
+  padding-left: 0.8em;
+  margin: 0.5em 0;
+  color: #6b7280;
+}
+.md-body table {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+}
+.md-body th,
+.md-body td {
+  border: 1px solid #d1d5db;
+  padding: 0.3em 0.6em;
+}

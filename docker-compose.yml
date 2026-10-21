@@ -1,0 +1,23 @@
+services:
+  backend:
+    build: ./backend
+    container_name: ai-chat-backend
+    volumes:
+      # 持久化 SQLite 数据库
+      - chat-data:/app/data
+    environment:
+      - DATABASE_DIR=/app/data
+      - DEFAULT_API_KEY=
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: ai-chat-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  chat-data:
