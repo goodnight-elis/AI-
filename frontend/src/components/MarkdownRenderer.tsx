@@ -1,6 +1,7 @@
 import { memo, type ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
+import remarkGfm from 'remark-gfm';
 
 /** 递归提取 React 节点中的纯文本（rehype-highlight 会把 children 变成元素数组） */
 function extractText(node: ReactNode): string {
@@ -35,6 +36,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({ content }: Prop
   return (
     <div className="md-body text-[15px]">
       <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight]}
         components={{
           // 围栏代码块由 code 组件接管布局，pre 直接透传避免双层包裹
