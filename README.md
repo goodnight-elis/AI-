@@ -2,7 +2,7 @@
 
 前后端分离的 AI 对话应用：SSE 流式输出、断线自动续答、多厂商模型一键切换。
 
-[![CI](https://github.com/goodnight-elis/ai-chat-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/goodnight-elis/ai-chat-assistant/actions/workflows/ci.yml)
+[![CI](https://github.com/goodnight-elis/AI-/actions/workflows/ci.yml/badge.svg)](https://github.com/goodnight-elis/AI-/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![React](https://img.shields.io/badge/React-18-61dafb?logo=react&logoColor=white)](https://react.dev)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
