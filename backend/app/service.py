@@ -83,27 +83,58 @@ def sse_event(event: str, payload: dict) -> str:
 # ---------------------------------------------------------------------------
 
 def build_context(db: Session, conv: models.Conversation) -> tuple[list[dict], int]:
-    """返回 (messages, dropped_count)。system prompt 始终保留，超预算时从最旧消息丢弃。"""
+    """返回 (messages, dropped_count)。system prompt 始终保留。
+
+    超预算时按「轮」整组丢弃（user 及其后的 assistant），保证窗口的第一条永远是
+    user —— 部分厂商不接受以 assistant 开头的 messages。
+    若只剩最后一轮仍超预算，则截断最后一条消息，避免请求被厂商直接拒绝。
+    """
     msgs = (
         db.query(models.Message)
         .filter_by(conversation_id=conv.id)
         .order_by(models.Message.id)
         .all()
     )
-    pairs = [{"role": m.role, "content": m.content, "id": m.id} for m in msgs if m.role in ("user", "assistant")]
+    items = [{"role": m.role, "content": m.content} for m in msgs if m.role in ("user", "assistant")]
 
-    total = sum(len(p["content"]) for p in pairs)
+    # 按「以 user 开头」切分成轮次
+    rounds: list[list[dict]] = []
+    for item in items:
+        if item["role"] == "user" or not rounds:
+            rounds.append([item])
+        else:
+            rounds[-1].append(item)
+
+    def _round_len(r: list[dict]) -> int:
+        return sum(len(m["content"]) for m in r)
+
+    total = sum(_round_len(r) for r in rounds)
     start = 0
-    while total > MAX_CONTEXT_CHARS and start < len(pairs) - 1:
-        total -= len(pairs[start]["content"])
+    dropped = 0
+    while total > MAX_CONTEXT_CHARS and start < len(rounds) - 1:
+        total -= _round_len(rounds[start])
+        dropped += len(rounds[start])
         start += 1
-    dropped = start
-    pairs = pairs[start:]
+    kept = rounds[start:]
+
+    # 只剩一轮仍超预算：截断最后一条，把总长度拉回预算内
+    if kept and total > MAX_CONTEXT_CHARS:
+        last = kept[-1][-1]
+        over = total - MAX_CONTEXT_CHARS
+        keep_chars = max(200, len(last["content"]) - over)
+        if keep_chars < len(last["content"]):
+            kept[-1] = kept[-1][:-1] + [
+                {
+                    "role": last["role"],
+                    "content": last["content"][:keep_chars] + "\n\n…（内容过长已截断）",
+                }
+            ]
 
     context: list[dict] = []
     if conv.system_prompt:
         context.append({"role": "system", "content": conv.system_prompt})
-    context.extend({"role": p["role"], "content": p["content"]} for p in pairs)
+    for r in kept:
+        context.extend(r)
     return context, dropped
 
 
